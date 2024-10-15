@@ -13,10 +13,8 @@ import json
 os.environ["OPENAI_API_KEY"] = "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"
 
 def preprocess_json(json_string):
-    # Remove any trailing commas before closing brackets or braces
     json_string = re.sub(r',\s*([}\]])', r'\1', json_string)
     
-    # Attempt to fix unclosed quotes and brackets
     open_quotes = 0
     open_braces = 0
     open_brackets = 0
@@ -37,7 +35,6 @@ def preprocess_json(json_string):
         
         fixed_json.append(char)
     
-    # Close any unclosed quotes, braces, or brackets
     fixed_json.extend(['"'] * open_quotes)
     fixed_json.extend(['}'] * open_braces)
     fixed_json.extend([']'] * open_brackets)
@@ -60,7 +57,6 @@ class AIVideoEducationVisualizer(Scene):
 
     def construct(self):
         print("Starting construct method")
-        # Dynamic Introduction
         title = Text(f"{self.main_topic.capitalize()} Lesson", font_size=48)
         self.play(Write(title))
         self.wait(2)
@@ -147,7 +143,7 @@ class AIVideoEducationVisualizer(Scene):
         match = re.search(r'y\s*=\s*(.+)', function_str)
         if match:
             func_str = match.group(1).lower()
-            func_str = func_str.replace('^', '**')  # Replace ^ with ** for Python
+            func_str = func_str.replace('^', '**') 
             
             try:
                 def safe_eval(x):
@@ -233,15 +229,12 @@ def generate_curriculum(prompt):
 
     model = OpenAI(temperature=0.7)
 
-    # Generate the curriculum
     output = model(prompt.to_string())
 
     try:
-        # Preprocess and parse the output as JSON
         preprocessed_output = preprocess_json(output)
         topics_data = json.loads(preprocessed_output)
         
-        # Create a Curriculum object
         curriculum = Curriculum(topics=[Topic(**topic) for topic in topics_data])
         
         print("Generated curriculum:")
@@ -258,7 +251,6 @@ def generate_curriculum(prompt):
         print("Raw output from OpenAI:")
         print(output)
     
-    # Return a default curriculum if parsing fails
     return Curriculum(topics=[Topic(title=f"Introduction to {prompt}", content=f"This lesson covers the basics of {prompt}", animation_type="text")])
 
 def main():
@@ -266,15 +258,13 @@ def main():
     curriculum = generate_curriculum(topic)
     
     print("Generated curriculum:")
-    print(curriculum.model_dump_json(indent=2))  # Use model_dump_json instead of json
+    print(curriculum.model_dump_json(indent=2))  
     
     try:
-        # Set up the configuration
         config.output_file = f"{topic.replace(' ', '_')}_lesson"
         config.quality = "medium_quality"
         config.preview = True
         
-        # Create and render the scene
         scene = AIVideoEducationVisualizer(curriculum, topic)
         scene.render()
     except Exception as e:
